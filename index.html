@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Productivity Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <!-- Sidebar: each button shows one "view" (section) of the app -->
+  <aside class="side">
+    <div class="brand"><i data-lucide="graduation-cap"></i> Studyboard</div>
+    <nav>
+      <button class="nav active" data-view="dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></button>
+      <button class="nav" data-view="tasks"><i data-lucide="check-square"></i><span>Tasks</span></button>
+      <button class="nav" data-view="planner"><i data-lucide="calendar-clock"></i><span>Planner</span></button>
+      <button class="nav" data-view="pomodoro"><i data-lucide="timer"></i><span>Pomodoro</span></button>
+      <button class="nav" data-view="notes"><i data-lucide="notebook-pen"></i><span>Notes</span></button>
+      <button class="nav" data-view="analytics"><i data-lucide="bar-chart-3"></i><span>Analytics</span></button>
+    </nav>
+    <div class="side-foot">
+      <button class="nav" data-action="theme"><i data-lucide="sun-moon"></i><span>Theme</span></button>
+      <button class="nav danger" data-action="clearAll"><i data-lucide="trash-2"></i><span>Clear data</span></button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view active">
+      <header class="head"><div><h1 id="greeting"></h1><p id="today" class="muted"></p></div>
+        <button class="btn primary" data-action="addTask">+ Quick add task</button></header>
+      <div class="stats" id="stats"></div>
+      <div class="grid2">
+        <div class="card"><h2>Tasks completed this week</h2><div class="chartbox"><canvas id="chWeek"></canvas><p class="empty-msg">Complete a task and it will show up here.</p></div></div>
+        <div class="card"><h2>Today's study schedule</h2><ul class="list" id="dashSchedule"></ul></div>
+      </div>
+      <div class="card"><h2>Upcoming deadlines</h2><ul class="list" id="dashDeadlines"></ul></div>
+    </section>
+
+    <!-- TASKS -->
+    <section id="view-tasks" class="view">
+      <header class="head"><h1>Tasks</h1><button class="btn primary" data-action="addTask">+ New task</button></header>
+      <div class="toolbar">
+        <input id="fSearch" type="search" placeholder="Search by title" aria-label="Search tasks">
+        <select id="fStatus" aria-label="Status"><option value="all">Any status</option><option>Pending</option><option>Completed</option></select>
+        <select id="fSubject" aria-label="Subject"></select>
+        <select id="fPriority" aria-label="Priority"><option value="all">Any priority</option><option>High</option><option>Medium</option><option>Low</option></select>
+        <select id="fDue" aria-label="Due date"><option value="all">Any due date</option><option value="today">Due today</option><option value="week">Next 7 days</option><option value="overdue">Overdue</option></select>
+        <select id="fSort" aria-label="Sort"><option value="due">Sort: due date</option><option value="priority">Sort: priority</option></select>
+      </div>
+      <ul class="list card" id="taskList"></ul>
+    </section>
+
+    <!-- PLANNER -->
+    <section id="view-planner" class="view">
+      <header class="head"><h1>Study planner</h1><button class="btn primary" data-action="addSession">+ New session</button></header>
+      <ul class="list card" id="sessionList"></ul>
+    </section>
+
+    <!-- POMODORO -->
+    <section id="view-pomodoro" class="view">
+      <header class="head"><h1>Pomodoro timer</h1></header>
+      <div class="card timer">
+        <div class="tabs" id="modeTabs">
+          <button data-mode="focus" class="active">Focus 25</button><button data-mode="short">Short break 5</button><button data-mode="long">Long break 15</button>
+        </div>
+        <div class="clock" id="clock" aria-live="off">25:00</div>
+        <input id="pomoSubject" list="subjects" placeholder="Subject for this focus session">
+        <div class="row center">
+          <button class="btn primary" id="tStart" data-action="tStart">Start</button>
+          <button class="btn" id="tPause" data-action="tPause" disabled>Pause</button>
+          <button class="btn ghost" data-action="tReset">Reset</button>
+        </div>
+        <div class="row center muted"><span>Focus sessions today: <b id="pCount">0</b></span><span>Total focus minutes: <b id="pMins">0</b></span></div>
+      </div>
+    </section>
+
+    <!-- NOTES -->
+    <section id="view-notes" class="view">
+      <header class="head"><h1>Study notes</h1><button class="btn primary" data-action="addNote">+ New note</button></header>
+      <div class="toolbar"><input id="nSearch" type="search" placeholder="Search notes" aria-label="Search notes"></div>
+      <div class="notes" id="noteGrid"></div>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section id="view-analytics" class="view">
+      <header class="head"><h1>Analytics</h1></header>
+      <div class="grid2">
+        <div class="card"><h2>Tasks completed, last 14 days</h2><div class="chartbox"><canvas id="chOver"></canvas><p class="empty-msg">No completed tasks yet.</p></div></div>
+        <div class="card"><h2>Study time by subject (min)</h2><div class="chartbox"><canvas id="chSubj"></canvas><p class="empty-msg">Finish a focus session or mark a study session done.</p></div></div>
+        <div class="card"><h2>Weekly productivity: study minutes</h2><div class="chartbox"><canvas id="chStudy"></canvas><p class="empty-msg">No study time logged this week.</p></div></div>
+        <div class="card"><h2>Task completion</h2><div class="chartbox"><canvas id="chPct"></canvas><p class="empty-msg">Add a task to see your completion rate.</p></div></div>
+      </div>
+    </section>
+  </main>
+
+  <datalist id="subjects"></datalist>
+  <dialog id="formDialog"><form id="dlgForm" novalidate></form></dialog>
+  <dialog id="confirmDialog"><form method="dialog"><p id="confirmMsg"></p>
+    <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn danger-btn" value="ok">Confirm</button></div></form></dialog>
+  <div id="toasts" aria-live="polite"></div>
+</body>
+</html>
